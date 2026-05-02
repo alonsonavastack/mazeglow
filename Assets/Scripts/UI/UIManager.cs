@@ -3,12 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 
-/// <summary>
-/// UIManager v7
-/// Fix 1: DestroyOldHUD() destruye el AutoHUD viejo ANTES de crear uno nuevo
-/// Fix 2: 2 corazones (MAX_LIVES = 2)
-/// Fix 3: Botón reintentar con símbolo ↺ (U+21BA)
-/// </summary>
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
@@ -27,7 +21,6 @@ public class UIManager : MonoBehaviour
     public Animator        achievementAnimator;
     public TextMeshProUGUI celebrationText;
 
-    // CONSTANTE CENTRAL — cambia aquí para cambiar en todo el HUD
     private const int MAX_LIVES = 2;
 
     private static readonly Color HeartFull  = new Color(0.95f, 0.15f, 0.20f);
@@ -37,76 +30,45 @@ public class UIManager : MonoBehaviour
         "Impresionante!", "Brillante!", "Perfecto!", "Increible!", "Fantastico!"
     };
 
-    // GameObject del canvas auto-generado, para poder destruirlo correctamente
     private static GameObject _autoHudCanvas;
 
     private void Awake()
     {
-        // ── Singleton por escena ───────────────────────────────────────────────────
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-        // Se quitó DontDestroyOnLoad(gameObject) para evitar referencias perdidas
-
-        // ── Destruir TODOS los AutoHUD anteriores que puedan existir ──────────────
-        // Esto resuelve el problema de que en el editor el DontDestroyOnLoad
-        // acumula objetos entre sesiones de Play
         DestroyAllOldAutoHUD();
     }
 
     private static void DestroyAllOldAutoHUD()
     {
-        // Buscar TODOS los objetos llamados "AutoHUD" en toda la escena incluyendo inactivos
         var all = Resources.FindObjectsOfTypeAll<Canvas>();
         foreach (var c in all)
-        {
-            if (c == null) continue;
-            if (c.gameObject.name == "AutoHUD")
-            {
-                Debug.Log("[UIManager] Destruyendo AutoHUD viejo.");
+            if (c != null && c.gameObject.name == "AutoHUD")
                 Destroy(c.gameObject);
-            }
-        }
         _autoHudCanvas = null;
     }
 
     private void Start()
     {
-        // Siempre reconstruir el HUD al iniciar
-        // (ignora asignaciones del Inspector para garantizar MAX_LIVES=2)
         BuildAutoHUD();
         RefreshHUD();
     }
 
-    // ══════════════════════════════════════════════════════════════════════════════
-    //  BUILD HUD
-    // ══════════════════════════════════════════════════════════════════════════════
     private void BuildAutoHUD()
     {
-        // Destruir canvas anterior si existe
-        if (_autoHudCanvas != null)
-        {
-            Destroy(_autoHudCanvas);
-            _autoHudCanvas = null;
-        }
+        if (_autoHudCanvas != null) { Destroy(_autoHudCanvas); _autoHudCanvas = null; }
 
         _autoHudCanvas = new GameObject("AutoHUD");
-        // Se quitó DontDestroyOnLoad(_autoHudCanvas) para que se limpie al salir de la escena
-
         var canvas = _autoHudCanvas.AddComponent<Canvas>();
         canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
         canvas.sortingOrder = 100;
-
         var scaler = _autoHudCanvas.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
         scaler.matchWidthOrHeight  = 0.5f;
         _autoHudCanvas.AddComponent<GraphicRaycaster>();
 
-        // ── BARRA SUPERIOR ─────────────────────────────────────────────────────────
+        // Barra superior
         var topBar = new GameObject("TopBar");
         topBar.transform.SetParent(_autoHudCanvas.transform, false);
         var topRT = topBar.AddComponent<RectTransform>();
@@ -117,9 +79,6 @@ public class UIManager : MonoBehaviour
         topRT.offsetMax = Vector2.zero;
         topBar.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.62f);
 
-        // [ < ]  Nivel X  ♥♥  [ ↺ ]
-
-        // Botón REGRESAR "<"
         backButton = MakeIconButton("BtnBack", topBar.transform,
             new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
             new Vector2(12f, 0f), new Vector2(80f, 76f), "<", 38f);
@@ -128,43 +87,35 @@ public class UIManager : MonoBehaviour
             SceneLoader.Instance?.GoToMainMenu();
         });
 
-        // Texto NIVEL
         levelText = MakeTMP("TxtNivel", topBar.transform,
             "Nivel 1", 30f, FontStyles.Bold, Color.white,
             new Vector2(0.28f, 0.5f), new Vector2(0.28f, 0.5f),
             Vector2.zero, new Vector2(250f, 76f), TextAlignmentOptions.Center);
 
-        // CORAZONES — MAX_LIVES = 2
         var hCont = new GameObject("HeartsCont");
         hCont.transform.SetParent(topBar.transform, false);
         var hRT = hCont.AddComponent<RectTransform>();
         hRT.anchorMin = hRT.anchorMax = new Vector2(0.62f, 0.5f);
-        hRT.pivot            = new Vector2(0.5f, 0.5f);
+        hRT.pivot = new Vector2(0.5f, 0.5f);
         hRT.anchoredPosition = Vector2.zero;
-        hRT.sizeDelta        = new Vector2(MAX_LIVES * 72f, 70f);
-
+        hRT.sizeDelta = new Vector2(MAX_LIVES * 72f, 70f);
         var layout = hCont.AddComponent<HorizontalLayoutGroup>();
-        layout.spacing                = 8f;
-        layout.childAlignment         = TextAnchor.MiddleCenter;
-        layout.childForceExpandWidth  = false;
-        layout.childForceExpandHeight = false;
-
+        layout.spacing = 8f;
+        layout.childAlignment = TextAnchor.MiddleCenter;
+        layout.childForceExpandWidth = layout.childForceExpandHeight = false;
         heartsContainer = hCont.transform;
 
-        // Crear exactamente MAX_LIVES corazones (2)
         for (int i = 0; i < MAX_LIVES; i++)
         {
             var hGO = new GameObject("Heart_" + i);
             hGO.transform.SetParent(hCont.transform, false);
             hGO.AddComponent<RectTransform>().sizeDelta = new Vector2(58f, 58f);
             var t = hGO.AddComponent<TextMeshProUGUI>();
-            t.text      = "\u2665"; // ♥
-            t.fontSize  = 48f;
+            t.text = "\u2665"; t.fontSize = 48f;
             t.alignment = TextAlignmentOptions.Center;
-            t.color     = HeartFull;
+            t.color = HeartFull;
         }
 
-        // Botón REINTENTAR con símbolo "R" (la fuente no soporta ↺)
         retryButton = MakeIconButton("BtnRetry", topBar.transform,
             new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
             new Vector2(-12f, 0f), new Vector2(80f, 76f), "R", 40f);
@@ -173,7 +124,6 @@ public class UIManager : MonoBehaviour
             GameController.Instance?.RetryLevel();
         });
 
-        // TEXTO CELEBRACIÓN
         var celGO = new GameObject("TxtCelebracion");
         celGO.transform.SetParent(_autoHudCanvas.transform, false);
         var celRT = celGO.AddComponent<RectTransform>();
@@ -181,28 +131,20 @@ public class UIManager : MonoBehaviour
         celRT.anchoredPosition = Vector2.zero;
         celRT.sizeDelta = new Vector2(700f, 120f);
         var celTMP = celGO.AddComponent<TextMeshProUGUI>();
-        celTMP.text      = "";
-        celTMP.fontSize  = 62f;
+        celTMP.text = ""; celTMP.fontSize = 62f;
         celTMP.fontStyle = FontStyles.Bold;
-        celTMP.color     = new Color(1f, 0.88f, 0.10f);
+        celTMP.color = new Color(1f, 0.88f, 0.10f);
         celTMP.alignment = TextAlignmentOptions.Center;
         celGO.SetActive(false);
         celebrationText = celTMP;
-
-        Debug.Log("[UIManager] AutoHUD construido con MAX_LIVES=" + MAX_LIVES);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════════
-    //  REFRESH
-    // ══════════════════════════════════════════════════════════════════════════════
+    // ── API Pública ───────────────────────────────────────────────────────────────
     public void RefreshHUD()
     {
         var gm = GameManager.Instance;
         if (gm == null) return;
-
-        if (levelText != null)
-            levelText.text = "Nivel " + gm.currentLevel;
-
+        if (levelText != null) levelText.text = "Nivel " + gm.currentLevel;
         RefreshHearts(gm.lives);
     }
 
@@ -214,9 +156,6 @@ public class UIManager : MonoBehaviour
             tmps[i].color = i < currentLives ? HeartFull : HeartEmpty;
     }
 
-    // ══════════════════════════════════════════════════════════════════════════════
-    //  API PÚBLICA
-    // ══════════════════════════════════════════════════════════════════════════════
     public void ShowGameHUD(int level)
     {
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
@@ -226,6 +165,12 @@ public class UIManager : MonoBehaviour
     public void ShowGameOverPanel()
     {
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
+    }
+
+    // ← MÉTODO NUEVO
+    public void HideGameOverPanel()
+    {
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
     }
 
     public void ShowAchievementUnlocked(Achievement ach)
@@ -258,9 +203,7 @@ public class UIManager : MonoBehaviour
         celebrationText.gameObject.SetActive(false);
     }
 
-    // ══════════════════════════════════════════════════════════════════════════════
-    //  HELPERS
-    // ══════════════════════════════════════════════════════════════════════════════
+    // ── Helpers ───────────────────────────────────────────────────────────────────
     private static Button MakeIconButton(string name, Transform parent,
         Vector2 ancMin, Vector2 ancMax, Vector2 ancPos, Vector2 size,
         string symbol, float fontSize)
@@ -269,13 +212,10 @@ public class UIManager : MonoBehaviour
         go.transform.SetParent(parent, false);
         var rt = go.AddComponent<RectTransform>();
         rt.anchorMin = ancMin; rt.anchorMax = ancMax;
-        rt.pivot            = new Vector2(ancMin.x > 0.5f ? 1f : 0f, 0.5f);
-        rt.anchoredPosition = ancPos;
-        rt.sizeDelta        = size;
-
+        rt.pivot = new Vector2(ancMin.x > 0.5f ? 1f : 0f, 0.5f);
+        rt.anchoredPosition = ancPos; rt.sizeDelta = size;
         var img = go.AddComponent<Image>();
         img.color = new Color(0.18f, 0.18f, 0.32f, 0.85f);
-
         var iconGO = new GameObject("Icon");
         iconGO.transform.SetParent(go.transform, false);
         var iRT = iconGO.AddComponent<RectTransform>();
@@ -286,7 +226,6 @@ public class UIManager : MonoBehaviour
         tmp.fontStyle = FontStyles.Bold; tmp.color = Color.white;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.raycastTarget = false;
-
         var btn = go.AddComponent<Button>();
         btn.targetGraphic = img;
         var cols = btn.colors;

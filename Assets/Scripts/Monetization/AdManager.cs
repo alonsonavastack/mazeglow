@@ -1,38 +1,34 @@
 using UnityEngine;
+using GoogleMobileAds.Api;
+using System;
 
 /// <summary>
-/// AdManager — Gestiona todos los anuncios del juego.
-/// Soporta AdMob (recompensados, intersticiales, banners) y Unity Ads.
-/// 
-/// ANTES DE USAR: Importa los siguientes paquetes en Unity:
-///   1. Google Mobile Ads Unity Plugin:
-///      https://github.com/googleads/googleads-mobile-unity/releases
-///   2. Unity Ads (ya incluido en Package Manager de Unity)
+/// AdManager — MazeGlow con Google Mobile Ads SDK v11
+/// App ID:       ca-app-pub-1637113371666338~5391695579
+/// Intersticial: ca-app-pub-1637113371666338/9300074435
+/// Recompensado: ca-app-pub-1637113371666338/9872806575
 /// </summary>
 public class AdManager : MonoBehaviour
 {
     public static AdManager Instance { get; private set; }
 
-    // ─── REEMPLAZA ESTOS IDs CON LOS TUYOS DE ADMOB ─────────────────────────────
-    private const string ADMOB_APP_ID           = "ca-app-pub-XXXXXXXXXXXXXXXX~XXXXXXXXXX";
-    private const string ADMOB_REWARDED_ID      = "ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX";
-    private const string ADMOB_INTERSTITIAL_ID  = "ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX";
-    private const string ADMOB_BANNER_ID        = "ca-app-pub-XXXXXXXXXXXXXXXX/XXXXXXXXXX";
-    // ─── IDs de prueba de AdMob (úsalos mientras desarrollas) ───────────────────
-    // ADMOB_REWARDED_ID     = "ca-app-pub-3940256099942544/5224354917"
-    // ADMOB_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712"
-    // ADMOB_BANNER_ID       = "ca-app-pub-3940256099942544/6300978111"
+    // ─── IDs REALES ───────────────────────────────────────────────────────────────
+    private const string ADMOB_APP_ID          = "ca-app-pub-1637113371666338~5391695579";
+    private const string ADMOB_INTERSTITIAL_ID = "ca-app-pub-1637113371666338/9300074435";
+    private const string ADMOB_REWARDED_ID     = "ca-app-pub-1637113371666338/9872806575";
 
-    // ─── REEMPLAZA CON TU GAME ID DE UNITY ADS ──────────────────────────────────
-    private const string UNITY_GAME_ID          = "XXXXXXXX";
-    private const string UNITY_REWARDED_ID      = "Rewarded_Android";
-    private const string UNITY_INTERSTITIAL_ID  = "Interstitial_Android";
+    // ─── IDs de PRUEBA — usar en editor y builds de desarrollo ───────────────────
+    private const string TEST_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712";
+    private const string TEST_REWARDED_ID      = "ca-app-pub-3940256099942544/5224354917";
 
-    // Callback de recompensa pendiente
-    private System.Action<int, int> pendingRewardCallback;
+    // Usar IDs de prueba en el editor, reales en el dispositivo
+    private string InterstitialID => Application.isEditor ? TEST_INTERSTITIAL_ID : ADMOB_INTERSTITIAL_ID;
+    private string RewardedID     => Application.isEditor ? TEST_REWARDED_ID     : ADMOB_REWARDED_ID;
 
-    // Evento que se dispara cuando el intersticial se cierra
-    public event System.Action OnInterstitialClosed;
+    private InterstitialAd interstitialAd;
+    private RewardedAd     rewardedAd;
+
+    public event Action OnInterstitialClosed;
 
     private void Awake()
     {
@@ -43,104 +39,102 @@ public class AdManager : MonoBehaviour
 
     private void Start()
     {
-        InitializeAds();
-    }
-
-    // ── Inicializar SDKs ─────────────────────────────────────────────────────────
-    private void InitializeAds()
-    {
-        /*
-         * PASO 1: Descomenta este bloque DESPUÉS de importar Google Mobile Ads SDK:
-         *
-         * MobileAds.Initialize(initStatus => {
-         *     LoadInterstitial();
-         *     LoadRewarded();
-         *     LoadBanner();
-         * });
-         *
-         * PASO 2: Descomenta este bloque DESPUÉS de importar Unity Ads:
-         *
-         * Advertisement.Initialize(UNITY_GAME_ID, false, this);
-         */
-
-        Debug.Log("[AdManager] Inicializado (SDKs pendientes de importar)");
-    }
-
-    // ── Anuncio Recompensado ─────────────────────────────────────────────────────
-    /// <param name="rewardCoins">Monedas a dar si ve el anuncio</param>
-    /// <param name="rewardLives">Vidas a dar si ve el anuncio</param>
-    public void ShowRewarded(int rewardCoins = 0, int rewardLives = 0)
-    {
-        if (GameManager.Instance.adsRemoved)
+        MobileAds.Initialize(initStatus =>
         {
-            // Si quitó los forzados, los recompensados siguen disponibles
-            // Dar recompensa directamente (política de MazeGlow)
-            GrantReward(rewardCoins, rewardLives);
-            return;
-        }
-
-        pendingRewardCallback = (coins, lives) =>
-        {
-            GrantReward(coins, lives);
-            AchievementManager.Instance?.TrackEvent(AchievementEvent.AdWatched);
-        };
-
-        /*
-         * Descomenta cuando tengas el SDK de AdMob:
-         *
-         * if (rewardedAd != null && rewardedAd.CanShowAd())
-         * {
-         *     rewardedAd.Show(reward => pendingRewardCallback?.Invoke(rewardCoins, rewardLives));
-         * }
-         */
-
-        Debug.Log($"[AdManager] Mostrar anuncio recompensado → +{rewardCoins} monedas, +{rewardLives} vidas");
-        // TEMPORAL: Dar recompensa directamente mientras desarrollas
-        GrantReward(rewardCoins, rewardLives);
+            Debug.Log("[AdManager] AdMob inicializado.");
+            LoadInterstitial();
+            LoadRewarded();
+        });
     }
 
-    // ── Anuncio Intersticial ─────────────────────────────────────────────────────
+    // ── Intersticial ──────────────────────────────────────────────────────────────
+    private void LoadInterstitial()
+    {
+        var request = new AdRequest();
+        InterstitialAd.Load(InterstitialID, request, (ad, error) =>
+        {
+            if (error != null) { Debug.LogWarning("[AdManager] Intersticial error: " + error); return; }
+            interstitialAd = ad;
+            Debug.Log("[AdManager] Intersticial cargado.");
+        });
+    }
+
     public void ShowInterstitial()
     {
-        if (GameManager.Instance.adsRemoved)
+        if (GameManager.Instance?.adsRemoved ?? false)
         {
             OnInterstitialClosed?.Invoke();
             return;
         }
 
-        /*
-         * Descomenta cuando tengas el SDK:
-         *
-         * if (interstitialAd != null && interstitialAd.CanShowAd())
-         * {
-         *     interstitialAd.OnAdFullScreenContentClosed += () => {
-         *         OnInterstitialClosed?.Invoke();
-         *         LoadInterstitial();
-         *     };
-         *     interstitialAd.Show();
-         *     return;
-         * }
-         */
-
-        Debug.Log("[AdManager] Mostrar anuncio intersticial");
-        OnInterstitialClosed?.Invoke();
+        if (interstitialAd != null && interstitialAd.CanShowAd())
+        {
+            interstitialAd.OnAdFullScreenContentClosed += () =>
+            {
+                OnInterstitialClosed?.Invoke();
+                LoadInterstitial(); // precargar el siguiente
+            };
+            interstitialAd.OnAdFullScreenContentFailed += _ =>
+            {
+                OnInterstitialClosed?.Invoke();
+                LoadInterstitial();
+            };
+            interstitialAd.Show();
+        }
+        else
+        {
+            Debug.Log("[AdManager] Intersticial no disponible — continuando.");
+            OnInterstitialClosed?.Invoke();
+            LoadInterstitial();
+        }
     }
 
-    // ── Banner ───────────────────────────────────────────────────────────────────
-    public void ShowBanner()
+    // ── Recompensado ──────────────────────────────────────────────────────────────
+    private void LoadRewarded()
     {
-        if (GameManager.Instance.adsRemoved) return;
-        Debug.Log("[AdManager] Mostrar banner");
-        // bannerView?.Show();
+        var request = new AdRequest();
+        RewardedAd.Load(RewardedID, request, (ad, error) =>
+        {
+            if (error != null) { Debug.LogWarning("[AdManager] Recompensado error: " + error); return; }
+            rewardedAd = ad;
+            Debug.Log("[AdManager] Recompensado cargado.");
+        });
     }
 
-    public void HideBanner()
+    public void ShowRewarded(int rewardCoins = 0, int rewardLives = 0)
     {
-        Debug.Log("[AdManager] Ocultar banner");
-        // bannerView?.Hide();
+        if (GameManager.Instance?.adsRemoved ?? false)
+        {
+            GrantReward(rewardCoins, rewardLives);
+            return;
+        }
+
+        if (rewardedAd != null && rewardedAd.CanShowAd())
+        {
+            rewardedAd.Show(reward =>
+            {
+                Debug.Log("[AdManager] Recompensa ganada: " + reward.Type + " x" + reward.Amount);
+                GrantReward(rewardCoins, rewardLives);
+                AchievementManager.Instance?.TrackEvent(AchievementEvent.AdWatched);
+            });
+            rewardedAd.OnAdFullScreenContentClosed += () =>
+            {
+                LoadRewarded(); // precargar el siguiente
+            };
+        }
+        else
+        {
+            Debug.Log("[AdManager] Recompensado no disponible — dando recompensa directa.");
+            GrantReward(rewardCoins, rewardLives);
+            LoadRewarded();
+        }
     }
 
-    // ── Dar recompensa al jugador ─────────────────────────────────────────────────
+    // ── Banner (opcional) ─────────────────────────────────────────────────────────
+    public void ShowBanner()  { /* implementar si se necesita */ }
+    public void HideBanner()  { /* implementar si se necesita */ }
+
+    // ── Recompensa al jugador ─────────────────────────────────────────────────────
     private void GrantReward(int coins, int lives)
     {
         if (coins > 0) GameManager.Instance?.AddCoins(coins);
@@ -148,23 +142,3 @@ public class AdManager : MonoBehaviour
         AudioManager.Instance?.Play("coinEarned");
     }
 }
-
-/*
- * ── GUÍA DE CONFIGURACIÓN DE ADMOB ──────────────────────────────────────────────
- *
- * 1. Ve a https://admob.google.com y crea una cuenta
- * 2. Crea una nueva App → Android → MazeGlow
- * 3. Crea 3 bloques de anuncios: Recompensado, Intersticial, Banner
- * 4. Copia los IDs y reemplaza las constantes en este archivo
- * 5. En Unity: Assets > Google Mobile Ads > Settings → pega el App ID
- * 6. En AndroidManifest.xml agrega:
- *    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"
- *               android:value="ca-app-pub-XXXXXXXX~XXXXXXXXXX"/>
- *
- * ── GUÍA DE CONFIGURACIÓN DE UNITY ADS ─────────────────────────────────────────
- *
- * 1. Ve a https://dashboard.unity3d.com/monetization
- * 2. Crea un nuevo proyecto → Android
- * 3. Copia el Game ID y reemplaza UNITY_GAME_ID arriba
- * 4. En Unity: Window > Package Manager → busca "Advertisement Legacy" e instálalo
- */

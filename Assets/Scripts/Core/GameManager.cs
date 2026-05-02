@@ -9,6 +9,12 @@ public class GameManager : MonoBehaviour
     public int coins        = 0;
     public int lives        = 2;   // 2 vidas por nivel
     public int hints        = 3;
+    
+    [Header("Rachas (Streaks)")]
+    public int currentStreak = 0;
+    public int longestStreak = 0;
+    public string lastLoginDate = "";
+    public string lastStreakDate = "";
 
     [Header("Configuración")]
     public bool soundEnabled      = true;
@@ -78,6 +84,7 @@ public class GameManager : MonoBehaviour
     {
         currentLevel++;
         AchievementManager.Instance?.TrackEvent(AchievementEvent.LevelCompleted);
+        StreakManager.Instance?.ExtendStreak();
         SaveManager.Instance?.SaveAll();
     }
 

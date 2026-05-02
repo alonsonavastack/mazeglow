@@ -120,6 +120,24 @@ public class PlayerController : MonoBehaviour
                     TryMove(d.y > 0 ? Vector3.forward : Vector3.back);
             }
         }
+        else // Simular touch con el Mouse en la computadora
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                touchStart = Input.mousePosition;
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                Vector2 d = (Vector2)Input.mousePosition - touchStart;
+                if (d.magnitude >= swipeThreshold)
+                {
+                    if (Mathf.Abs(d.x) > Mathf.Abs(d.y))
+                        TryMove(d.x > 0 ? Vector3.right : Vector3.left);
+                    else
+                        TryMove(d.y > 0 ? Vector3.forward : Vector3.back);
+                }
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.UpArrow)    || Input.GetKeyDown(KeyCode.W)) TryMove(Vector3.forward);
         if (Input.GetKeyDown(KeyCode.DownArrow)  || Input.GetKeyDown(KeyCode.S)) TryMove(Vector3.back);

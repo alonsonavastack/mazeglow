@@ -11,6 +11,16 @@ public class MainMenuController : MonoBehaviour
     [Header("Logo (opcional)")]
     public UnityEngine.UI.Image logoImage;
 
+    [Header("Bottom Tabs")]
+    public Button tabHomeButton;
+    public Button tabAdvancedButton;
+    public Button tabCollectionButton;
+    public Button tabSettingsButton;
+
+    [Header("Paneles y Alertas")]
+    public GameObject collectionPanel;
+    public GameObject streakAlertIcon;
+
     private void Start()
     {
         // Buscar logo automáticamente si no está asignado
@@ -25,11 +35,27 @@ public class MainMenuController : MonoBehaviour
         // Aplicar tema
         ThemeManager.Instance?.ApplyTheme(GameManager.Instance?.darkModeEnabled ?? true);
 
-        // Conectar botones
+        // Conectar botones principales
         if (playButton != null)
             playButton.onClick.AddListener(OnPlayButtonPressed);
         if (settingsButton != null)
             settingsButton.onClick.AddListener(OnSettingsButtonPressed);
+
+        // Conectar pestañas inferiores
+        if (tabHomeButton != null)
+            tabHomeButton.onClick.AddListener(ShowHome);
+        if (tabAdvancedButton != null)
+            tabAdvancedButton.onClick.AddListener(ShowAdvanced);
+        if (tabCollectionButton != null)
+            tabCollectionButton.onClick.AddListener(ShowCollection);
+        if (tabSettingsButton != null)
+            tabSettingsButton.onClick.AddListener(OnSettingsButtonPressed);
+
+        // Mostrar alerta de racha si es un nuevo día y no se ha reclamado
+        if (streakAlertIcon != null && StreakManager.Instance != null)
+        {
+            streakAlertIcon.SetActive(!StreakManager.Instance.StreakClaimedToday);
+        }
     }
 
     private void BuscarLogoAutomatico()
@@ -56,4 +82,22 @@ public class MainMenuController : MonoBehaviour
 
     public void OnPlayButtonPressed()     => SceneLoader.Instance?.GoToGame();
     public void OnSettingsButtonPressed() => SceneLoader.Instance?.GoToSettings();
+
+    // ── Lógica de Tabs Inferiores ──────────────────────────────────────────────
+    public void ShowHome()
+    {
+        if (collectionPanel != null) collectionPanel.SetActive(false);
+        // Aquí se pueden ocultar otros paneles en el futuro
+    }
+
+    public void ShowAdvanced()
+    {
+        Debug.Log("[MainMenu] Niveles avanzados: Próximamente");
+        // Opcional: Mostrar un pequeño mensaje temporal (Toast) en la pantalla
+    }
+
+    public void ShowCollection()
+    {
+        if (collectionPanel != null) collectionPanel.SetActive(true);
+    }
 }

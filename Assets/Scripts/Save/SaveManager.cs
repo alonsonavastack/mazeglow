@@ -35,7 +35,10 @@ public class SaveManager : MonoBehaviour
             lives              = gm.lives <= 0 ? 2 : gm.lives,
             hints              = gm.hints,
             adsRemoved         = gm.adsRemoved,
-            lastLoginDate      = DateTime.Now.ToString("yyyy-MM-dd"),
+            lastLoginDate      = gm.lastLoginDate,
+            lastStreakDate     = gm.lastStreakDate,
+            currentStreak      = gm.currentStreak,
+            longestStreak      = gm.longestStreak,
             achievements       = AchievementManager.Instance?.GetSaveData()
         };
 
@@ -72,6 +75,10 @@ public class SaveManager : MonoBehaviour
             gm.lives = data.lives <= 0 ? 2 : data.lives;
             gm.hints        = data.hints;
             gm.adsRemoved   = data.adsRemoved;
+            gm.lastLoginDate  = data.lastLoginDate;
+            gm.lastStreakDate = data.lastStreakDate;
+            gm.currentStreak  = data.currentStreak;
+            gm.longestStreak  = data.longestStreak;
             AchievementManager.Instance?.LoadSaveData(data.achievements);
         }
         catch (Exception e)
@@ -99,5 +106,8 @@ public class SaveData
     public int    hints;
     public bool   adsRemoved;
     public string lastLoginDate;
+    public string lastStreakDate;
+    public int    currentStreak;
+    public int    longestStreak;
     public AchievementSaveData achievements;
 }
