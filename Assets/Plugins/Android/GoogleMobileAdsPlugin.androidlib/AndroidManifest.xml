@@ -10,5 +10,6 @@ required for displaying ads.
   <uses-permission android:name="android.permission.INTERNET"/>
   <application>
     <uses-library android:required="false" android:name="org.apache.http.legacy"/>
+    <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-1637113371666338~5391695579"/>
   </application>
 </manifest>

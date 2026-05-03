@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "69915361669",
+    "project_id": "mazeglow",
+    "storage_bucket": "mazeglow.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:69915361669:android:ae89ab83c296c0693e84ec",
+        "android_client_info": {
+          "package_name": "com.alonsonava.mazeglow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCezfb2cQ8_nFQnC9Vf5sXAV94ATmmwlbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

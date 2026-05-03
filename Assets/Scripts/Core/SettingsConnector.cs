@@ -16,6 +16,7 @@ public class SettingsConnector : MonoBehaviour
     public Button botonCalificanos;
     public Button botonEscribenos;
     public Button botonPrivacidad;
+    public Button botonCuenta;
 
     [Header("Botones tipo toggle (Button con texto ON/OFF)")]
     public Button botonVibraciones;
@@ -124,5 +125,12 @@ public class SettingsConnector : MonoBehaviour
         botonPrivacidad?.onClick.AddListener(() =>
             Application.OpenURL("https://tunombre.github.io/mazeglow-privacy")
         );
+
+        // Cuenta (Login de Google)
+        botonCuenta?.onClick.AddListener(() =>
+        {
+            if (LoginScreen.Instance != null)
+                LoginScreen.Instance.Show(loginMode: true);
+        });
     }
 }

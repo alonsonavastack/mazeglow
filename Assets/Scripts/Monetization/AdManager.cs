@@ -22,13 +22,14 @@ public class AdManager : MonoBehaviour
     private const string TEST_REWARDED_ID      = "ca-app-pub-3940256099942544/5224354917";
 
     // Usar IDs de prueba en el editor, reales en el dispositivo
-    private string InterstitialID => Application.isEditor ? TEST_INTERSTITIAL_ID : ADMOB_INTERSTITIAL_ID;
-    private string RewardedID     => Application.isEditor ? TEST_REWARDED_ID     : ADMOB_REWARDED_ID;
+    private string InterstitialID => TEST_INTERSTITIAL_ID;
+    private string RewardedID     => TEST_REWARDED_ID;
 
     private InterstitialAd interstitialAd;
     private RewardedAd     rewardedAd;
 
     public event Action OnInterstitialClosed;
+    public event Action OnRewardedClosed;
 
     private void Awake()
     {
@@ -119,7 +120,8 @@ public class AdManager : MonoBehaviour
             });
             rewardedAd.OnAdFullScreenContentClosed += () =>
             {
-                LoadRewarded(); // precargar el siguiente
+                OnRewardedClosed?.Invoke();
+                LoadRewarded();
             };
         }
         else

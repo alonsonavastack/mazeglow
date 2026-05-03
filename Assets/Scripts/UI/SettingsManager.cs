@@ -103,27 +103,31 @@ public class SettingsManager : MonoBehaviour
     // ── Cuenta — Conectar con Google / Play Games ────────────────────────────────
     public void OpenConnectAccountModal()
     {
+        if (LoginScreen.Instance != null)
+        {
+            LoginScreen.Instance.Show(loginMode: true);
+            return;
+        }
         if (connectAccountModal != null)
             connectAccountModal.SetActive(true);
     }
 
     public void CloseConnectAccountModal()
     {
+        LoginScreen.Instance?.Hide();
         if (connectAccountModal != null)
             connectAccountModal.SetActive(false);
     }
 
     public void LoginWithGoogle()
     {
-        // TODO: Integrar Google Sign-In SDK
-        Debug.Log("[Settings] Login con Google");
+        Debug.Log("[Settings] Login con Google — pendiente");
         CloseConnectAccountModal();
     }
 
     public void LoginWithPlayGames()
     {
-        // TODO: Integrar Google Play Games SDK
-        Debug.Log("[Settings] Login con Play Games");
+        Debug.Log("[Settings] Login con Play Games — pendiente");
         CloseConnectAccountModal();
     }
 

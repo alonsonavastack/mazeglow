@@ -226,7 +226,21 @@ public class GameOverScreen : MonoBehaviour
     private void OnClickContinuar()
     {
         HideImmediate();
-        AdManager.Instance?.ShowRewarded(rewardCoins: 0, rewardLives: 2);
+        if (AdManager.Instance != null)
+        {
+            AdManager.Instance.OnRewardedClosed += HandleRewardedClosed;
+            AdManager.Instance.ShowRewarded(rewardCoins: 0, rewardLives: 2);
+        }
+        else
+        {
+            GameController.Instance?.RetryLevel();
+        }
+    }
+
+    private void HandleRewardedClosed()
+    {
+        if (AdManager.Instance != null)
+            AdManager.Instance.OnRewardedClosed -= HandleRewardedClosed;
         GameController.Instance?.RetryLevel();
     }
 

@@ -1,0 +1,23 @@
+# ninja log v5
+0	2774	1777752049414639116	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	13f5061925df1882
+2	2559	1777752049197815742	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	3252655089093a9e
+3	2228	1777752048867682116	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	ce652dd5d8cd7aac
+2775	3023	1777752049661006709	/Users/codfull-stack/Desktop/MazeGlow/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/665x4456/obj/arm64-v8a/libgame.so	d2eec1b7bd644253
+1	2129	1777752048764546725	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	2ea0bac076c5d21f
+3	2046	1777752048686552066	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	b22602bbdff030f5
+351	645	1777752047254228633	/Users/codfull-stack/Desktop/MazeGlow/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/665x4456/obj/arm64-v8a/libswappywrapper.so	9915585c59cf8c5a
+2	1966	1777752048600877659	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	3cdc68ea4f3e258c
+1	2017	1777752048654315113	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	e1edbf7694c64370
+2	1957	1777752048593676243	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d2c8560a25a958c
+4	349	1777752046997346667	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2e1c13b0b8fa1dcd
+10	875	1777766211696577951	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	2e1c13b0b8fa1dcd
+876	1274	1777766212088640823	/Users/codfull-stack/Desktop/MazeGlow/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/665x4456/obj/arm64-v8a/libswappywrapper.so	9915585c59cf8c5a
+12	1951	1777766212772667900	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	3cdc68ea4f3e258c
+12	1966	1777766212788191396	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d2c8560a25a958c
+11	1996	1777766212818575026	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	e1edbf7694c64370
+13	2008	1777766212830814003	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	b22602bbdff030f5
+11	2069	1777766212892102731	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	2ea0bac076c5d21f
+13	2134	1777766212958028882	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	ce652dd5d8cd7aac
+12	2357	1777766213176121082	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	3252655089093a9e
+11	2565	1777766213354719774	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	13f5061925df1882
+2565	2706	1777766213536000221	/Users/codfull-stack/Desktop/MazeGlow/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/665x4456/obj/arm64-v8a/libgame.so	d2eec1b7bd644253
